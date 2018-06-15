@@ -1,18 +1,8 @@
 defmodule GenStageSample do
-  @moduledoc """
-  Documentation for GenStageSample.
-  """
+  use Application
 
-  @doc """
-  Hello world.
 
-  ## Examples
-
-      iex> GenStageSample.hello
-      :world
-
-  """
-  def hello do
-    :world
+  def start(_type, _args) do
+    GenStageSampleSup.start_link([])
   end
 end
