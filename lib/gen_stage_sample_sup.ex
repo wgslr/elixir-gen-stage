@@ -12,7 +12,7 @@ defmodule GenStageSampleSup do
 
   def init(_args) do
     children = [
-      SampleAgent
+      {BookWriter, ["assets/small.txt"]}
     ]
     Supervisor.init(children, strategy: :one_for_one)
   end

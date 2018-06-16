@@ -5,4 +5,5 @@ defmodule GenStageSample do
   def start(_type, _args) do
     GenStageSampleSup.start_link([])
   end
+
 end
