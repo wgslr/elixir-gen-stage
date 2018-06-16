@@ -13,13 +13,20 @@ defmodule ShellOutput do
   end
 
   def handle_events(events, from, state) do
-
-
-    # Enum.each(events, &IO.write/1)
-    Enum.each(events, &IO.write/1)
-
     Logger.info("Consumer #{__MODULE__} received #{length(events)} events from #{inspect(from)}")
+    GenStageSample.delay()
 
+    process(events, state)
+
+    Logger.info("Consumer #{__MODULE__} processed #{length(events)} events")
     {:noreply, [], state}
+  end
+
+  def terminate(reason, _state) do
+    Logger.warn("Terminating with reason #{inspect(reason)}")
+  end
+
+  defp process(events, _state) do
+    Enum.each(events, &IO.write(IO.ANSI.magenta() <> &1 <> IO.ANSI.default_color()))
   end
 end

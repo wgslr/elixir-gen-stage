@@ -3,19 +3,32 @@ defmodule GenStageSampleSup do
 
   ## API
 
-  def start_link(opts) do
-    Supervisor.start_link(__MODULE__, :ok, opts)
+  def start_link(args \\ []) do
+    Supervisor.start_link(__MODULE__, args, [])
   end
 
   ## Callbacks
 
-  def init(_args) do
+  def init(args \\ []) do
+    inpath = Keyword.get(args, :inpath, "assets/medium.txt")
+    outpath = Keyword.get(args, :outpath, "output.txt")
+
     children = [
-      {BookWriter, ["assets/medium.txt"]},
-      %{id: ShellOutput, start: {ShellOutput, :start_link, [[]]}, restart: :transient},
-      %{id: FileOutput, start: {FileOutput, :start_link, ["output"]}, restart: :transient}
+      {BookWriter, [inpath]},
+      %{
+        id: ShellOutput,
+        start: {ShellOutput, :start_link, [[]]},
+        restart: :transient,
+        shutdown: 100
+      },
+      %{
+        id: FileOutput,
+        start: {FileOutput, :start_link, [outpath]},
+        restart: :transient,
+        shutdown: 100
+      }
     ]
 
-    Supervisor.init(children, strategy: :rest_for_one)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end
