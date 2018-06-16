@@ -12,36 +12,34 @@ defmodule BookWriter do
     GenStage.start_link(__MODULE__, %{path: path}, name: __MODULE__)
   end
 
-  def init(%{path: path} = opts) do
+  def init(%{path: path}) do
+    Logger.info("BookWriter starting for file #{path}")
     {:ok, fd} = File.open(path, [:read])
-    {:producer, %{fd: fd}}
+    {:producer, %{fd: fd}, dispatcher: GenStage.BroadcastDispatcher}
   end
 
   def handle_demand(demand, %{fd: fd} = state) do
     Logger.info("Received demand for #{demand} lines")
 
     events = Enum.reduce_while(1..demand, [], fn _, lines ->
-      case IO.gets(fd) do
+      case IO.read(fd, :line) do
         :eof -> {:halt, lines}
         line when is_binary(line) -> {:cont, [line | lines]}
       end
     end) |> Enum.reverse()
 
     if length(events) < demand do
-      Logger.warning("Could read only #{length(events)} lines when demand is #{demand}")
+      Logger.warn("Could read only #{length(events)} lines when demand is #{demand}")
+      send(self(), {:stop, :eof})
     end
 
-    # events = case Stream.take(s, deman) do
-    #   lines when length(lines) == demand -> lines
-    #   lines ->
-    #     Logger.warning("Not enough lines in the source to satisfy demand"))
-    # end
-
-    # TODO store demand
-
-    Logger.info("#{self()} sending #{length(events)} events")
+    Logger.info("#{__MODULE__} sending #{length(events)} events")
 
     {:noreply, events, state}
+  end
+
+  def handle_info({:stop, reason}, state) do
+    {:stop, reason, state}
   end
 
 

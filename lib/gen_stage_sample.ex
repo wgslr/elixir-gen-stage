@@ -1,9 +1,9 @@
 defmodule GenStageSample do
-  use Application
+  # use Application
 
 
-  def start(_type, _args) do
-    GenStageSampleSup.start_link([])
-  end
+  # def start(_type, _args) do
+  #   GenStageSampleSup.start_link([])
+  # end
 
 end
